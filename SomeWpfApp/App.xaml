@@ -1,0 +1,10 @@
+﻿<Application x:Class="SomeWpfApp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SomeWpfApp"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary Source="/PresentationFramework.Luna, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35,
+        ProcessorArchitecture=MSIL;component/themes/luna.normalcolor.xaml" />
+    </Application.Resources>
+</Application>
