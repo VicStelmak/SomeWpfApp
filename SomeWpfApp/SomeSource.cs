@@ -13,61 +13,38 @@ namespace SomeWpfApp
 
         internal string GetData()
         {
-            _dispatcher.BeginInvoke(new Action(() => 
-            { 
+            _output = ""; 
+
+            var frame = new DispatcherFrame(); 
+
+            _dispatcher.BeginInvoke(new Action(() =>
+            {
                 var someWindow = new SomeWindow();
+
                 someWindow.Closed += (input, eventArgs) =>
                 {
                     _output = someWindow.UserInput;
-                    
-                    if (Application.Current.MainWindow != null)
+
+                    if (Application.Current.MainWindow?.DataContext is SomeViewModel viewModel)
                     {
-                        var currentDataContext = Application.Current.MainWindow.DataContext;
-                        var viewModel = (SomeViewModel)currentDataContext;
+                        var property = viewModel.GetType().GetProperty("Data");
+                        property?.SetValue(viewModel, _output);
 
-                        _dispatcher.Invoke(() =>
-                        {
-                            var mainWindow = Application.Current.MainWindow;
-                            var property = viewModel.GetType().GetProperty("Data");
-
-                            if (property != null) property.SetValue(viewModel, _output);
-
-                            var textBlockToUpdate = "TextBlock2";
-                            var manualBinding = BindingOperations.GetBindingExpression(mainWindow.FindName(textBlockToUpdate)
-                                as TextBlock, TextBlock.TextProperty);
-
-                            manualBinding?.UpdateTarget();
-                        });
-
-                        if (currentDataContext != null)
-                        {
-                            if (Application.Current.Windows.Count == 0) Application.Current.Shutdown();
-                        }
+                        var textBlockToUpdate = "TextBlock2";
+                        var mainWindow = Application.Current.MainWindow;
+                        var manualBinding = BindingOperations.GetBindingExpression(mainWindow.FindName(textBlockToUpdate) as TextBlock, TextBlock.TextProperty);
+                        manualBinding?.UpdateTarget();
                     }
+
+                    frame.Continue = false; 
                 };
 
                 someWindow.Show();
             }));
 
-            while (_output == null) 
-            {
-                var currentlyOpenedWindows = Application.Current?.Windows;
+            Dispatcher.PushFrame(frame); 
 
-                if (currentlyOpenedWindows == null || currentlyOpenedWindows.Count == 0) return "";
-
-                var frame = new DispatcherFrame();
-                _dispatcher.BeginInvoke(DispatcherPriority.Background, new DispatcherOperationCallback(LeaveFrame), frame);
-                Dispatcher.PushFrame(frame);
-            }
-
-            return _output;
-        }
-
-        private object LeaveFrame(object frame)
-        {
-            ((DispatcherFrame) frame).Continue = false; 
-            
-            return null;
+            return _output ?? ""; 
         }
     }
 }
